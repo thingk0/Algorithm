@@ -1,20 +1,18 @@
-#include <iostream>
 #include <string>
-#include <vector>
+#include <stack>
 
 using namespace std;
 
 int solution(string s) {
-    vector<char> stack;
-    stack.reserve(s.size());
-    
+    stack<char> st;
+
     for (char ch : s) {
-        if (!stack.empty() && stack.back() == ch) {
-            stack.pop_back();
+        if (!st.empty() && st.top() == ch) {
+            st.pop();
         } else {
-            stack.push_back(ch);
+            st.push(ch);
         }
     }
-    
-    return stack.empty();
+
+    return st.empty() ? 1 : 0;
 }
