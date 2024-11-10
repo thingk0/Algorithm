@@ -1,31 +1,34 @@
+#include <string>
 #include <cmath>
 #include <vector>
 
 using namespace std;
 
-int calculate_days_left(int progress, int speed) {
-    return ceil((100.0 - progress) / speed);
-}
-
 vector<int> solution(vector<int> progresses, vector<int> speeds) {
-    vector<int> answer;
-    int n = progresses.size();
     
-    int count = 1;
-    int max_day = calculate_days_left(progresses[0], speeds[0]);
+    vector<int> answer;
+    vector<int> left_days;
+    
+    // 남은 일수를 계산하여 left_days에 추가
+    for (size_t i = 0; i < progresses.size(); ++i) {
+        left_days.push_back(ceil((100.0 - progresses[i]) / speeds[i]));
+    }
+    
+    int max_day = left_days[0];
+    int cnt = 1;
 
-    for (int i = 1; i < n; ++i) {
-        int current_day = calculate_days_left(progresses[i], speeds[i]);
-
-        if (current_day <= max_day) {
-            count++;
+    // left_days를 순회하며 배포 일자를 정리
+    for (size_t i = 1; i < left_days.size(); ++i) {
+        if (left_days[i] > max_day) {
+            answer.push_back(cnt);
+            cnt = 1;
+            max_day = left_days[i];
         } else {
-            answer.push_back(count);
-            count = 1;
-            max_day = current_day;
+            ++cnt;
         }
     }
-
-    answer.push_back(count);
+    
+    // 마지막 배포 추가
+    answer.push_back(cnt);
     return answer;
 }
