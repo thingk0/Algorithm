@@ -1,69 +1,66 @@
 import java.util.Arrays;
 import java.util.ArrayDeque;
 
+class Node {
+    int index;
+    Node prev;
+    Node next;
+
+    public Node(int index) {
+        this.index = index;
+    }
+}
+
 class Solution {
     public String solution(int n, int k, String[] cmd) {
-        // 삭제된 행을 추적하기 위한 스택
-        ArrayDeque<Integer> deletedRows = new ArrayDeque<>();
-        
-        // 연결 리스트를 시뮬레이션하기 위한 배열
-        int[] upLinks = new int[n];
-        int[] downLinks = new int[n];
-        
-        // 초기 연결 설정
+        // 노드 생성 및 초기 연결 설정
+        Node[] nodes = new Node[n];
         for (int i = 0; i < n; i++) {
-            upLinks[i] = i - 1;
-            downLinks[i] = i + 1;
+            nodes[i] = new Node(i);
+        }
+        for (int i = 0; i < n; i++) {
+            if (i > 0) nodes[i].prev = nodes[i - 1];
+            if (i < n - 1) nodes[i].next = nodes[i + 1];
         }
         
-        // 현재 선택된 행 인덱스 조정
-        int currentRow = k;
-        
+        // 현재 선택 노드 설정
+        Node current = nodes[k];
+        // 삭제된 노드를 추적하는 스택
+        ArrayDeque<Node> deleted = new ArrayDeque<>();
+
         for (String command : cmd) {
-            switch (command.charAt(0)) {
-                case 'C': // 현재 행 삭제
-                    deletedRows.push(currentRow);
-                    
-                    // 현재 행의 위 아래 행 연결
-                    int prevRow = upLinks[currentRow];
-                    int nextRow = downLinks[currentRow];
-                    
-                    if (prevRow != -1) downLinks[prevRow] = nextRow;
-                    if (nextRow != n) upLinks[nextRow] = prevRow;
-                    
-                    // 다음 선택할 행 결정
-                    currentRow = nextRow != n ? nextRow : prevRow;
-                    break;
-                    
-                case 'Z': // 최근 삭제된 행 복구
-                    if (!deletedRows.isEmpty()) {
-                        int restoredRow = deletedRows.pop();
-                        int prevRestore = upLinks[restoredRow];
-                        int nextRestore = downLinks[restoredRow];
-                        
-                        if (prevRestore != -1) downLinks[prevRestore] = restoredRow;
-                        if (nextRestore != n) upLinks[nextRestore] = restoredRow;
-                    }
-                    break;
+            char op = command.charAt(0);
+            if (op == 'U' || op == 'D') {
+                String[] parts = command.split(" ");
+                int move = Integer.parseInt(parts[1]);
+                for (int i = 0; i < move; i++) {
+                    current = (op == 'U') ? current.prev : current.next;
+                }
+            } else if (op == 'C') {
+                // 현재 노드 삭제
+                deleted.push(current);
+                Node prev = current.prev;
+                Node next = current.next;
                 
-                default: // 상/하 이동
-                    String[] parts = command.split(" ");
-                    int move = Integer.parseInt(parts[1]);
-                    
-                    for (int i = 0; i < move; i++) {
-                        currentRow = parts[0].equals("U")
-                            ? upLinks[currentRow] 
-                            : downLinks[currentRow];
-                    }
+                if (prev != null) prev.next = next;
+                if (next != null) next.prev = prev;
+                
+                // 다음 선택할 노드: 다음 노드가 있으면 그걸, 없으면 이전 노드
+                current = (next != null) ? next : prev;
+            } else if (op == 'Z') {
+                // 최근 삭제된 노드 복구
+                Node node = deleted.pop();
+                if (node.prev != null) node.prev.next = node;
+                if (node.next != null) node.next.prev = node;
             }
         }
         
         // 결과 문자열 생성
         char[] result = new char[n];
         Arrays.fill(result, 'O');
-        
-        for (int deletedRow : deletedRows) {
-            result[deletedRow] = 'X';
+        while (!deleted.isEmpty()) {
+            Node node = deleted.pop();
+            result[node.index] = 'X';
         }
         
         return new String(result);
