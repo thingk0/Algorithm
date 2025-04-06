@@ -1,5 +1,4 @@
 def solution(answers):
-    
     patterns = [
         [1, 2, 3, 4, 5],
         [2, 1, 2, 3, 2, 4, 2, 5],
@@ -7,6 +6,7 @@ def solution(answers):
     ]
     
     scores = [0] * 3
+    
     for i, ans in enumerate(answers):
         for j, ptn in enumerate(patterns):
             if ans == ptn[i % len(ptn)]:
